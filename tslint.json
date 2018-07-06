@@ -5,5 +5,10 @@
       "config/**/*.js",
       "node_modules/**/*.ts"
     ]
+  },
+  "rules": {
+  "interface-name": [false],
+  "member-access": [false],
+  "no-empty-interface" : [false]
   }
 }
