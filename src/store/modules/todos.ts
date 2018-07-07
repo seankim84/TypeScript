@@ -6,17 +6,19 @@ const REMOVE = 'todos/REMOVE';
 const TOGGLE = 'todos/TOGGLE';
 const CHANGE_INPUT = 'todos/CHANGE_INPUT';
 
-type CreatePayload = string;
+//PayloadType 생성;
+
+type CreatePayload = string; 
 type RemovePayload = number;
 type TogglePayload = number;
-type Change_InputPayload = string;
+type ChangeInputPayload = string;
 
 
 export const actionCreators = {
     create : createAction<CreatePayload>(CREATE),
     remove : createAction<RemovePayload>(REMOVE),
     toggle : createAction<TogglePayload>(TOGGLE),
-    changeInput : createAction<Change_InputPayload>(CHANGE_INPUT)
+    changeInput : createAction<ChangeInputPayload>(CHANGE_INPUT)
 }
 
 const TodoItemRecord = Record({
@@ -54,3 +56,41 @@ const TodoStateRecord = Record({
     todoItems: List(),
     input: ''
 });
+
+export class TodosState extends TodoStateRecord {
+    todoItems : List<TodoItemData>;
+    input: string;
+}
+
+const initialState = new TodosState();
+
+export default handleActions<TodosState, any>(
+    {
+        [CREATE]: (state, action: Action<CreatePayload>): TodosState => {
+            return <TodosState>state.withMutations(
+                s => {
+                    s.set('input', '')
+                        .update('todoItems', (todoItems: List<TodoItemData>) => todoItems.push(
+                            new TodoItemData({ text: action.payload })
+                        ));
+                }
+            );
+        },
+        [REMOVE]: (state, action: Action<RemovePayload>): TodosState => {
+            return <TodosState>state.update(
+                'todoItems',
+                (todoItems: List<TodoItemData>) => todoItems.filter(
+                    t => t ? t.id !== action.payload : false
+                )
+            );
+        },
+        [TOGGLE]: (state, action: Action<TogglePayload>): TodosState => {
+            const index = state.todoItems.findIndex(t => t ? t.id === action.payload : false);
+            return <TodosState>state.updateIn(['todoItems', index, 'done'], done => !done);
+        },
+        [CHANGE_INPUT]: (state, action: Action<ChangeInputPayload>): TodosState => {
+            return <TodosState>state.set('input', action.payload);
+        },
+    },
+    initialState
+);
